@@ -1,0 +1,285 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<title>SNAKE</title>
+	</head>
+	<body>
+		<canvas id="stage"></canvas>
+	</body>
+	<script>
+		
+		//Spielfeld Dimensionen "in Kästchen"
+		var stage_x = 20;
+		var stage_y = 20;
+		//10 Canvas Pixel sind ein Kästchen
+		var scale = 10;
+		//Array zum Speichern der Snake Position
+		var snake = [];
+		//Object zum Speichern der aktuellen Bewegungsrichtung der Schlange
+		var snake_direction = {
+			x: 1,
+			y: 0
+		};
+		//Array zum Speichern der auf derm Spielfeld befindlichen Food Items
+		var food = [];
+		//Array zum Speichern der Hindernisse auf dem Spielfeld
+		var walls = [];
+		//Spielfeld => Canvas Element
+		var stage = document.querySelector('#stage');
+		//große des Canvas setzen
+		stage.width = stage_x * scale;
+		stage.height = stage_y * scale;
+		//2D Drawing Context um in des Canvas zeichnen zu können
+		var ctx = stage.getContext('2d');
+		//Spielfeld komplett schwarz Färben
+		ctx.fillStyle = '#000000';
+		ctx.fillRect(0, 0, stage.width, stage.height);
+		//Variable für das Interval-Handle welches das Spiel Frame für Frame vorantreibt
+		var loop = null; 
+		//Bild für die Tiles 
+		var tiles = new Image(40,40);
+		//Wenn das Bild geladen ist kann das Spiel Starten
+		tiles.onload = function(){
+			//Funktion um festzustellen ob 2 Dinge miteinander kollidieren
+			//Parameter können Objekte mit {x,y} sein
+			//oder Arrays (bzw belibieg tief verschaltelte Arrays) aus solchen Objekten 
+			//gibt false oder true oder ein Object mit den Kollition index zurück
+			var isColliding = function(_a, _b){
+				var hasCollided = false;
+				if(Array.isArray(_a) || Array.isArray(_b)) {
+					if(!Array.isArray(_a)) {
+						_a = [_a];
+					}
+					if(!Array.isArray(_b)) {
+						_b = [_b];
+					}
+					for(var j = 0; j < _b.length; j++) {
+						for(var i = 0; i < _a.length; i++) {
+							if(isColliding(_a[i], _b[j])) {
+								hasCollided = {
+									index_a: i,
+									index_b: j
+								};
+							}
+						}
+					}
+					return hasCollided;
+				}
+				return (_a.x === _b.x && _a.y === _b.y ? true:false); 
+			};
+			//Funktion welche eine Wandhindernix in X-Richung an einer Zufälligen Position erzeugt. Mit der einschränkung dass die Y Koordinate zwischen y_top und y_bottom liegt
+			var generate_wall_x = function(y_top, y_bottom){
+				
+				var tmp_y = Math.floor( Math.random() * (y_bottom - y_top )) + y_top;
+				var tmp_x = Math.floor( Math.random() * (stage_x - 7) );
+				var tmp_wall = [];
+				for(var i = 0; i < 7; i++) {
+					tmp_wall.push({
+						x: tmp_x + i,
+						y: tmp_y
+					});
+				}
+				walls.push(tmp_wall);
+			}
+			
+			//2 Zufällige Wand-Hindernisse erzeugen
+			generate_wall_x(0, Math.floor(stage_y / 2));
+			generate_wall_x(Math.floor(stage_y / 2) + 1, stage_y - 1);
+			//Snake initialisren. Ausganspositon in der Mitte des Spielfeldes
+			snake = [
+				{
+					x: Math.floor(stage_x / 2),
+					y: Math.floor(stage_y / 2)
+				},
+				{
+					x: Math.floor(stage_x / 2) - 1,
+					y: Math.floor(stage_y / 2)
+				},
+				{
+					x: Math.floor(stage_x / 2) - 2,
+					y: Math.floor(stage_y / 2)
+				}
+			];
+			//Funktion die ein Food Item an zufälliger Stelle in das Spielfeld einfügt
+			var spawn_food = function() {
+				//Zufällige Position erzeugen
+				var tmp = {
+					x: Math.floor(Math.random() * stage_x),
+					y: Math.floor(Math.random() * stage_y),
+					ttl: 30
+				};
+				//Kollisionen mit bereit bestehen Objekten überprüfen
+				//not in snake
+				if(isColliding(tmp, snake)) {
+					spawn_food();
+					return;
+				}
+				
+				//not in other food
+				if(isColliding(tmp, food)) {
+					spawn_food();
+					return;
+				}
+				//not in wall
+				if(isColliding(tmp, walls)) {
+					spawn_food();
+					return;
+				}
+				console.log(tmp);
+				
+				//Neues Food item hinzufügen
+				food.push(tmp);
+			};
+			console.log(walls);
+			//Funktion welche einen Frame Rendert
+			var render = function() {
+				//clear stage
+				ctx.fillStyle = '#000000';
+				ctx.fillRect(0, 0, stage.width, stage.height);
+				//Wänder Rendern
+				ctx.fillStyle = '#CCCCCC';
+				for(var i = 0; i < walls.length; i++) {
+					for(var j = 0; j < walls[i].length; j++) {
+						ctx.fillRect(walls[i][j].x * scale, walls[i][j].y * scale, scale, scale);
+					}
+				}
+				//Food items
+				ctx.fillStyle = '#ff0000';
+				for(var i = 0; i < food.length; i++) {
+					//ctx.fillRect(food[i].x * scale, food[i].y * scale, scale, scale);
+					ctx.drawImage(tiles, 20, 10, 10, 10, food[i].x * scale, food[i].y * scale, scale, scale);
+				}
+				//Snake
+				for(var i = 0; i < snake.length; i++) {
+					if(i === 0) {
+						//Kopf
+						//ctx.fillStyle = '#00ff00';
+						var snake_head_direction;
+						if(snake_direction.x === 1) {
+							snake_head_direction = 30;
+						} else if(snake_direction.x === -1) {
+							snake_head_direction = 0;
+						} else if(snake_direction.y === 1) {
+							snake_head_direction = 20;
+						} else {
+							snake_head_direction = 10;
+						}
+						ctx.drawImage(tiles, snake_head_direction, 30, 10, 10, snake[0].x * scale, snake[0].y * scale, scale, scale);
+					} else if(i === snake.length - 1) {
+						//Tail
+						var snake_taildirection;
+						if(snake[i].y === snake[i-1].y) {
+							if(snake[i].x > snake[i-1].x) {
+								snake_taildirection = 20;
+							} else {
+								snake_taildirection = 0;
+							}
+						} else {
+							if(snake[i].y > snake[i-1].y) {
+								snake_taildirection = 30;
+							} else {
+								snake_taildirection = 10;
+							}
+						}
+						ctx.drawImage(tiles, snake_taildirection, 0, 10, 10, snake[i].x * scale, snake[i].y * scale, scale, scale);
+					} else {
+						//body
+						if(snake[i].y === snake[i-1].y) {
+							ctx.drawImage(tiles, 0, 10, 10, 10, snake[i].x * scale, snake[i].y * scale, scale, scale);
+						} else {
+							ctx.drawImage(tiles, 10, 10, 10, 10, snake[i].x * scale, snake[i].y * scale, scale, scale);
+						}
+					}
+				}
+			}
+			//Eventlistener für die Tastatursteuerung
+			document.querySelector('document, html').addEventListener('keydown', function(_e){
+				//Wenn die Game-Loop noch nicht läuft starten
+				if(loop === null) {
+					//Game Loop (Spiel Logik)
+					loop = setInterval(function(){
+						//Wenn die Lebenszeit von einen Fooditem (ttl) abgelaufen ist das item entfernen und ein neues erzeugen
+						for(var i = 0; i < food.length; i++) {
+							food[i].ttl --;
+							if(food[i].ttl < 1) {
+								food.splice(i,1);
+								spawn_food();
+							}
+			 			}
+						//Die Schlange Weiterbewegen
+						snake.unshift({
+							x: (snake[0].x + snake_direction.x + stage_x) % stage_x,
+							y: (snake[0].y + snake_direction.y + stage_y) % stage_y
+						});
+						//Collition mit einem Food item?
+						if(a = isColliding(snake[0], food)) {
+							//Das Food item entfernen
+							food.splice(a.index_b,1);
+							//Ein neues erzeugen
+							spawn_food();
+						} else {
+							//wenn nicht letztes Kästchen der Schlange entfernen damit die Länge der Schlange gleich bleibt
+							snake.pop();
+						}
+						
+						
+						//Self colltion
+						if(isColliding(snake.concat([]).splice(1,snake.length) , snake[0])) {
+							//Spiel anhalten
+							clearInterval(loop);
+						}
+						//Wall colltion
+						if(isColliding(walls, snake[0])) {
+							//Spiel anhalten
+							clearInterval(loop);
+						}
+						//Nach dem die Game-Loop die Zusände aller Objekte aktualisiert hat das Frame rendern (Ausgeben)
+						render();
+					},100);
+				}
+				//Verarbeiten der Tastatur Steuerung
+				console.log(_e);
+				var snake_direction_tmp;
+				switch(_e.key) {
+					case 'ArrowUp':
+						snake_direction_tmp = {
+							x: 0,
+							y: -1
+						};
+					break;
+					case 'ArrowDown':
+						snake_direction_tmp = {
+							x: 0,
+							y: 1
+						};
+					break;
+					case 'ArrowLeft':
+						snake_direction_tmp = {
+							x: -1,
+							y: 0
+						};
+					break;
+					case 'ArrowRight':
+						snake_direction_tmp = {
+							x: 1,
+							y: 0
+						};
+					break;
+				}
+				//Neue richtung nur übernehmen wenn sie nicht in die genau gegengesetzte Richtung zeigt
+				if(!(snake_direction.x + snake_direction_tmp.x === 0 && 
+					snake_direction.y + snake_direction_tmp.y === 0)) {
+					snake_direction = snake_direction_tmp;
+				}
+			});
+			//initial 2 Food Items erzeugen
+			spawn_food();
+			spawn_food();
+			//no vor spielstart einemal einen einzelnen Frame rendern
+			render();
+		};
+		//Bild mit den Tiles laden
+		tiles.src = "snake.png"; 
+	</script>
+</html>
