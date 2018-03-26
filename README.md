@@ -2,7 +2,7 @@
 Snake Aufgaben:<br />
 
 Patrick Stefan: Multiplay + Snake Cornertiles<br />
-##Philipp Maximilian: Live-Score, Score Screen (Game Over), Pause on Space, Reset<br />
+## Philipp Maximilian: Live-Score, Score Screen (Game Over), Pause on Space, Reset<br />
 Max: Tron<br />
 Darko: 3x Food Items, -3 +3 +1<br />
 
