@@ -6,17 +6,29 @@
 		<link href="https://fonts.googleapis.com/css?family=Cabin|Faster+One" rel="stylesheet">
 	</head>
 	<style type="text/css">
+	body{
+		width: 200px;
+	}
 		i{
 			font-style: normal;
 		}
 
 		p {
+			display: inline;
 			font-family: Cabin;
 			font-weight: bold;
+			margin: 0;
+		}
+		canvas{
+			display: inherit;
+		}
+		.overlay{
+			display: none;
+			float: right;
 		}
 	</style>
 	<body>
-		<p style="margin: 0">Score: <i class="points">0</i></p>
+		<p>Score: <i class="points">0</i></p><p class="overlay">paused</p>
 		<canvas id="stage"></canvas>
 	</body>
 	<script>
@@ -24,6 +36,7 @@
 			clearInterval(loop)
 			window.location="./gameover.html?score="+score
 		}
+		var paused=false
 		var score=0
 		//Spielfeld Dimensionen "in Kästchen"
 		var stage_x = 20;
@@ -216,53 +229,59 @@
 					//Game Loop (Spiel Logik)
 					loop = setInterval(function(){
 						//Wenn die Lebenszeit von einen Fooditem (ttl) abgelaufen ist das item entfernen und ein neues erzeugen
-						for(var i = 0; i < food.length; i++) {
-							food[i].ttl --;
-							if(food[i].ttl < 1) {
-								food.splice(i,1);
+						if(!paused){
+							for(var i = 0; i < food.length; i++) {
+								food[i].ttl --;
+								if(food[i].ttl < 1) {
+									food.splice(i,1);
+									spawn_food();
+								}
+				 			}
+							//Die Schlange Weiterbewegen
+							snake.unshift({
+								x: (snake[0].x + snake_direction.x + stage_x) % stage_x,
+								y: (snake[0].y + snake_direction.y + stage_y) % stage_y
+							});
+							//Collition mit einem Food item?
+							if(a = isColliding(snake[0], food)) {
+								//Das Food item entfernen
+								food.splice(a.index_b,1);
+								//Ein neues erzeugen
 								spawn_food();
+								//Add score
+								score=score+10
+								document.querySelector(".points").innerHTML=score
+							} else {
+								//wenn nicht letztes Kästchen der Schlange entfernen damit die Länge der Schlange gleich bleibt
+								snake.pop();
 							}
-			 			}
-						//Die Schlange Weiterbewegen
-						snake.unshift({
-							x: (snake[0].x + snake_direction.x + stage_x) % stage_x,
-							y: (snake[0].y + snake_direction.y + stage_y) % stage_y
-						});
-						//Collition mit einem Food item?
-						if(a = isColliding(snake[0], food)) {
-							//Das Food item entfernen
-							food.splice(a.index_b,1);
-							//Ein neues erzeugen
-							spawn_food();
-							//Add score
-							score=score+10
-							document.querySelector(".points").innerHTML=score
-						} else {
-							//wenn nicht letztes Kästchen der Schlange entfernen damit die Länge der Schlange gleich bleibt
-							snake.pop();
-						}
 
 
-						//Self colltion
-						if(isColliding(snake.concat([]).splice(1,snake.length) , snake[0])) {
-							//Spiel anhalten
-							// clearInterval(loop);
-							gameover()
+							//Self colltion
+							if(isColliding(snake.concat([]).splice(1,snake.length) , snake[0])) {
+								//Spiel anhalten
+								// clearInterval(loop);
+								gameover()
+							}
+							//Wall colltion
+							if(isColliding(walls, snake[0])) {
+								//Spiel anhalten
+								// clearInterval(loop);
+								gameover()
+							}
+							//Nach dem die Game-Loop die Zusände aller Objekte aktualisiert hat das Frame rendern (Ausgeben)
+							render();
+						
 						}
-						//Wall colltion
-						if(isColliding(walls, snake[0])) {
-							//Spiel anhalten
-							// clearInterval(loop);
-							gameover()
+						else{
+							
 						}
-						//Nach dem die Game-Loop die Zusände aller Objekte aktualisiert hat das Frame rendern (Ausgeben)
-						render();
-					},100);
+						},100);
 				}
 				//Verarbeiten der Tastatur Steuerung
 				console.log(_e);
 				var snake_direction_tmp;
-				var paused=false
+				
 				switch(_e.key) {
 					case 'ArrowUp':
 						snake_direction_tmp = {
@@ -289,8 +308,14 @@
 						};
 					break;
 					case ' ':
-						clearInterval(loop)
+					if(paused===false){
 						paused=true
+						document.querySelector(".overlay").style.display="initial"
+					}
+					else if(paused===true){
+						paused=false
+						document.querySelector(".overlay").style.display="none"
+					}
 					break;
 					case 'r':
 					location.reload()
