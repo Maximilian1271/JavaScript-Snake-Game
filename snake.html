@@ -5,10 +5,11 @@
 		<title>SNAKE</title>
 	</head>
 	<body>
+		<p style="margin: 0">Score: <span>1000</span></p>
 		<canvas id="stage"></canvas>
 	</body>
 	<script>
-		
+
 		//Spielfeld Dimensionen "in Kästchen"
 		var stage_x = 20;
 		var stage_y = 20;
@@ -36,14 +37,14 @@
 		ctx.fillStyle = '#000000';
 		ctx.fillRect(0, 0, stage.width, stage.height);
 		//Variable für das Interval-Handle welches das Spiel Frame für Frame vorantreibt
-		var loop = null; 
-		//Bild für die Tiles 
+		var loop = null;
+		//Bild für die Tiles
 		var tiles = new Image(40,40);
 		//Wenn das Bild geladen ist kann das Spiel Starten
 		tiles.onload = function(){
 			//Funktion um festzustellen ob 2 Dinge miteinander kollidieren
 			//Parameter können Objekte mit {x,y} sein
-			//oder Arrays (bzw belibieg tief verschaltelte Arrays) aus solchen Objekten 
+			//oder Arrays (bzw belibieg tief verschaltelte Arrays) aus solchen Objekten
 			//gibt false oder true oder ein Object mit den Kollition index zurück
 			var isColliding = function(_a, _b){
 				var hasCollided = false;
@@ -66,11 +67,11 @@
 					}
 					return hasCollided;
 				}
-				return (_a.x === _b.x && _a.y === _b.y ? true:false); 
+				return (_a.x === _b.x && _a.y === _b.y ? true:false);
 			};
 			//Funktion welche eine Wandhindernix in X-Richung an einer Zufälligen Position erzeugt. Mit der einschränkung dass die Y Koordinate zwischen y_top und y_bottom liegt
 			var generate_wall_x = function(y_top, y_bottom){
-				
+
 				var tmp_y = Math.floor( Math.random() * (y_bottom - y_top )) + y_top;
 				var tmp_x = Math.floor( Math.random() * (stage_x - 7) );
 				var tmp_wall = [];
@@ -82,7 +83,7 @@
 				}
 				walls.push(tmp_wall);
 			}
-			
+
 			//2 Zufällige Wand-Hindernisse erzeugen
 			generate_wall_x(0, Math.floor(stage_y / 2));
 			generate_wall_x(Math.floor(stage_y / 2) + 1, stage_y - 1);
@@ -115,7 +116,7 @@
 					spawn_food();
 					return;
 				}
-				
+
 				//not in other food
 				if(isColliding(tmp, food)) {
 					spawn_food();
@@ -127,7 +128,7 @@
 					return;
 				}
 				console.log(tmp);
-				
+
 				//Neues Food item hinzufügen
 				food.push(tmp);
 			};
@@ -222,8 +223,8 @@
 							//wenn nicht letztes Kästchen der Schlange entfernen damit die Länge der Schlange gleich bleibt
 							snake.pop();
 						}
-						
-						
+
+
 						//Self colltion
 						if(isColliding(snake.concat([]).splice(1,snake.length) , snake[0])) {
 							//Spiel anhalten
@@ -268,7 +269,7 @@
 					break;
 				}
 				//Neue richtung nur übernehmen wenn sie nicht in die genau gegengesetzte Richtung zeigt
-				if(!(snake_direction.x + snake_direction_tmp.x === 0 && 
+				if(!(snake_direction.x + snake_direction_tmp.x === 0 &&
 					snake_direction.y + snake_direction_tmp.y === 0)) {
 					snake_direction = snake_direction_tmp;
 				}
@@ -280,6 +281,6 @@
 			render();
 		};
 		//Bild mit den Tiles laden
-		tiles.src = "snake.png"; 
+		tiles.src = "snake.png";
 	</script>
 </html>
