@@ -242,6 +242,7 @@
 				//Verarbeiten der Tastatur Steuerung
 				console.log(_e);
 				var snake_direction_tmp;
+				var paused=false
 				switch(_e.key) {
 					case 'ArrowUp':
 						snake_direction_tmp = {
@@ -266,6 +267,11 @@
 							x: 1,
 							y: 0
 						};
+					break;
+					case ' ':
+						clearInterval(loop)
+						console.log("pause")
+						paused=true
 					break;
 				}
 				//Neue richtung nur übernehmen wenn sie nicht in die genau gegengesetzte Richtung zeigt
