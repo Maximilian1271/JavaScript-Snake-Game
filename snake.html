@@ -4,15 +4,21 @@
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 		<title>SNAKE</title>
 	</head>
+	<style type="text/css">
+		i{
+			font-style: normal;
+		}
+	</style>
 	<body>
-		<p style="margin: 0">Score: <span>1000</span></p>
+		<p style="margin: 0">Score: <i class="points">0</i></p>
 		<canvas id="stage"></canvas>
 	</body>
 	<script>
 		function gameover(){
 			clearInterval(loop)
-			window.location="./gameover.html"
+			window.location="./gameover.html?score="+score
 		}
+		var score=0
 		//Spielfeld Dimensionen "in Kästchen"
 		var stage_x = 20;
 		var stage_y = 20;
@@ -222,6 +228,9 @@
 							food.splice(a.index_b,1);
 							//Ein neues erzeugen
 							spawn_food();
+							//Add score
+							score=score+10
+							document.querySelector(".points").innerHTML=score
 						} else {
 							//wenn nicht letztes Kästchen der Schlange entfernen damit die Länge der Schlange gleich bleibt
 							snake.pop();

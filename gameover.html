@@ -42,7 +42,7 @@
 	</style>
 	<body>
 		<h1>Game Over</h1>
-		<p>Your Score: <span>1000</span></p>
+		<p>Your Score: <i class="score">undefined</i></p>
 		<div class="margin">
 			<a href="#" class="btn">Play again</a>
 		</div>
@@ -50,6 +50,9 @@
 			document.querySelector(".btn").addEventListener("click", function(){
 				window.location="./snake.html"
 			})
+			window.onload=function(){
+				document.querySelector(".score").innerHTML=window.location.search.split("?score=")[1]
+			}
 		</script>
 	</body>
 </html>
