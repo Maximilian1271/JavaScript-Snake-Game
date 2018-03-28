@@ -286,6 +286,9 @@
 						clearInterval(loop)
 						paused=true
 					break;
+					case 'r':
+					location.reload()
+					break;
 				}
 				//Neue richtung nur übernehmen wenn sie nicht in die genau gegengesetzte Richtung zeigt
 				if(!(snake_direction.x + snake_direction_tmp.x === 0 &&
