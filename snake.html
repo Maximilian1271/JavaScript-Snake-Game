@@ -9,7 +9,10 @@
 		<canvas id="stage"></canvas>
 	</body>
 	<script>
-
+		function gameover(){
+			clearInterval(loop)
+			window.location="./gameover.html"
+		}
 		//Spielfeld Dimensionen "in Kästchen"
 		var stage_x = 20;
 		var stage_y = 20;
@@ -228,12 +231,14 @@
 						//Self colltion
 						if(isColliding(snake.concat([]).splice(1,snake.length) , snake[0])) {
 							//Spiel anhalten
-							clearInterval(loop);
+							// clearInterval(loop);
+							gameover()
 						}
 						//Wall colltion
 						if(isColliding(walls, snake[0])) {
 							//Spiel anhalten
-							clearInterval(loop);
+							// clearInterval(loop);
+							gameover()
 						}
 						//Nach dem die Game-Loop die Zusände aller Objekte aktualisiert hat das Frame rendern (Ausgeben)
 						render();
